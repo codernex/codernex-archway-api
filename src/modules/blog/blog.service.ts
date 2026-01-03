@@ -57,6 +57,12 @@ export class BlogService {
     };
   }
 
+  async getAll() {
+    return this.repository.find({
+      select: ['slug', 'updatedAt'],
+    });
+  }
+
   async findOne(opts: FindOptionsWhere<Blog>, ip: string) {
     if (opts.slug) {
       const key = `${ip}-${opts.slug as string}`;

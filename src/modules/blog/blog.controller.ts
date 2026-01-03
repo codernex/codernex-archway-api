@@ -34,6 +34,11 @@ export class BlogController {
   findAll(@Query() q: PaginationQueryDto) {
     return this.blogService.findAll(q);
   }
+  @Public()
+  @Get('all')
+  getAll() {
+    return this.blogService.getAll();
+  }
 
   @Public()
   @Get('recent')

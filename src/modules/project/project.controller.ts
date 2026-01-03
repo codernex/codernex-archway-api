@@ -30,6 +30,12 @@ export class ProjectController {
   }
 
   @Public()
+  @Get('all')
+  getAll() {
+    return this.projectService.getAll();
+  }
+
+  @Public()
   @Get('featured')
   findFeatured() {
     console.log('Getting featured projects');

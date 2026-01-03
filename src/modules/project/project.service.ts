@@ -16,6 +16,12 @@ export class ProjectService {
     return this.repository.save(project);
   }
 
+  async getAll() {
+    return this.repository.find({
+      select: ['slug', 'updatedAt'],
+    });
+  }
+
   async findAll(query: QueryProjectDto) {
     const { page = 1, limit = 10, status, featured, tag, search } = query;
 
@@ -47,7 +53,9 @@ export class ProjectService {
       qb.andWhere(
         `(project.title ILIKE :search
         OR project.shortDescription ILIKE :search
-        OR project.fullDescription ILIKE :search)`,
+        OR project.fullDescription ILIKE :search)
+        OR project.technologies ILIKE :search
+        `,
         { search: `%${search}%` },
       );
     }
