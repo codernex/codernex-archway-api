@@ -12,10 +12,7 @@ config();
 const configService = new ConfigService();
 
 export const dbConfig: DataSourceOptions = {
-  username: configService.getOrThrow<string>('DB_USER'),
-  password: configService.getOrThrow<string>('DB_PASS'),
-  host: configService.getOrThrow<string>('DB_HOST'),
-  database: configService.getOrThrow<string>('DB_NAME'),
+  url: configService.get<string>('DB_URL'),
   type: 'postgres',
   entities: [Setting, User, Blog, Tag, Experience, Project, Media],
   synchronize: false,
