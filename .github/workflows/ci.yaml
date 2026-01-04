@@ -14,13 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Node (CI only, EC2 has its own)
+      # 2. Setup Node.js (CI only)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 3. Copy project to EC2 (exclude node_modules & .git)
+      # 3. Copy project to EC2 (keep .env.production)
       - name: Copy project to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -35,8 +35,10 @@ jobs:
             node_modules
             .git
             .github
+            .env
+            .env.production
 
-      # 4. Build & restart app on EC2
+      # 4. Build & restart NestJS on EC2
       - name: Build and restart Backend on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -53,11 +55,10 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-            # Ensure node/npm
             node -v
             npm -v
 
-            # Ensure PM2 exists
+            # Ensure PM2
             if ! command -v pm2 &> /dev/null; then
               npm install -g pm2
             fi
@@ -66,7 +67,13 @@ jobs:
             npm install
             npm run build
 
-            # Restart app
+            # Prune dev deps
+            npm prune --production
+
+            # Restart API with existing env file
             pm2 delete api || true
-            pm2 start npm --name "api" -- start
+            pm2 start dist/main.js \
+              --name api \
+              --env production \
+              --time
             pm2 save
