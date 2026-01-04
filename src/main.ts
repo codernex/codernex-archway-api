@@ -15,7 +15,11 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      'https://codernex.dev',
+      'https://www.codernex.dev',
+      'http://localhost:3000',
+    ],
     credentials: true,
   });
 
