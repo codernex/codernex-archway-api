@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Public } from 'src/core/decorator/auth.decorator';
 import { BrevoService } from 'src/services/brevo';
 
-class CreateContactDto {
+export class CreateContactDto {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -16,6 +16,10 @@ class CreateContactDto {
   @IsNotEmpty()
   @IsString()
   message: string;
+
+  @IsOptional()
+  @IsString()
+  subject: string;
 }
 
 @Controller('contact')
@@ -36,6 +40,7 @@ export class ContactController {
     });
 
     await this.brevoService.sendEmail(dto);
+    await this.brevoService.sendCustomerEmail(dto);
 
     return 'email send';
   }

@@ -1,0 +1,72 @@
+name: Deploy Nestjs Backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node (CI only, EC2 has its own)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 3. Copy project to EC2 (exclude node_modules & .git)
+      - name: Copy project to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          source: "."
+          target: "/home/${{ secrets.EC2_USER }}/apps/api"
+          rm: true
+          exclude: |
+            node_modules
+            .git
+            .github
+
+      # 4. Build & restart app on EC2
+      - name: Build and restart Backend on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            cd ~/apps/api
+
+            # Load NVM
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            # Ensure node/npm
+            node -v
+            npm -v
+
+            # Ensure PM2 exists
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+
+            # Install deps & build
+            npm install
+            npm run build
+
+            # Restart app
+            pm2 delete api || true
+            pm2 start npm --name "api" -- start
+            pm2 save

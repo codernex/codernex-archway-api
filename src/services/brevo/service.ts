@@ -9,6 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ContactList } from './constant';
 import { welcomeEmail } from 'src/templates/welcome';
+import { CreateContactDto } from 'src/modules/contact/contact.controller';
 
 @Injectable()
 export class BrevoService {
@@ -37,7 +38,7 @@ export class BrevoService {
     });
   }
 
-  sendEmail({ email, name }: { name: string; email: string }) {
+  async sendEmail({ email, name }: CreateContactDto) {
     return this.transactionEmailApi.sendTransacEmail({
       htmlContent: welcomeEmail(),
       sender: {
@@ -51,6 +52,37 @@ export class BrevoService {
         },
       ],
       subject: 'RE: Inbound_Signal // Status: 200 OK (Borhan Uddin)',
+    });
+  }
+
+  async sendCustomerEmail({ email, name, subject, message }: CreateContactDto) {
+    await this.transactionEmailApi.sendTransacEmail({
+      htmlContent: `
+      <div>
+        ${welcomeEmail()}
+        <hr />
+        <p><strong>Copy of your message:</strong></p>
+        <p>Subject: ${subject}</p>
+        <p>${message}</p>
+      </div>
+    `,
+      sender: {
+        email: 'contact@codernex.dev',
+        name: 'Borhan Uddin (Codernex)',
+      },
+      to: [
+        {
+          email,
+          name,
+        },
+      ],
+      bcc: [
+        {
+          email: 'admin@codernex.dev',
+          name: 'Borhan Admin Copy',
+        },
+      ],
+      subject: `RE: ${message} // Status: 200 OK`,
     });
   }
 }
