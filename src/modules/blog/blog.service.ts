@@ -108,6 +108,8 @@ export class BlogService {
         'publishedAt',
         'readingTime',
         'views',
+        'createdAt',
+        'updatedAt',
       ],
       relations: ['author', 'tags'],
     });
