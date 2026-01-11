@@ -14,6 +14,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ContactModule } from './modules/contact/contact.module';
 import { UploadModule } from './modules/upload/media.module';
+import { ApiKeyModule } from './modules/api-key/api-key.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { UploadModule } from './modules/upload/media.module';
         limit: 2,
       },
     ]),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     ExperienceModule,
@@ -37,6 +40,7 @@ import { UploadModule } from './modules/upload/media.module';
     SettingsModule,
     ContactModule,
     UploadModule,
+    ApiKeyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -64,7 +64,7 @@ jobs:
             fi
 
             # create product env
-            cat > .env.production <<EOF
+            cat > .env <<EOF
             NODE_ENV=production
             DB_URL=${{ secrets.DB_URL }}
             PORT=${{ secrets.PORT }}
@@ -76,6 +76,8 @@ jobs:
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             EOF
             # Install deps & build
             npm install
