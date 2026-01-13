@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+import { ApiKey } from 'src/modules/api-key/entities/api-key.entitity';
 import { Blog } from 'src/modules/blog/entities/blog.entity';
 import { Experience } from 'src/modules/experience/entities/experience.entity';
 import { Project } from 'src/modules/project/entities/project.entity';
@@ -14,7 +15,7 @@ const configService = new ConfigService();
 export const dbConfig: DataSourceOptions = {
   url: configService.get<string>('DB_URL'),
   type: 'postgres',
-  entities: [Setting, User, Blog, Tag, Experience, Project, Media],
+  entities: [Setting, User, Blog, Tag, Experience, Project, Media, ApiKey],
   synchronize: false,
   logging: true,
   migrations: ['dist/db/migrations/*{.ts,.js}'],
