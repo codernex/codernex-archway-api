@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ExtractJwt, JwtFromRequestFunction, Strategy } from 'passport-jwt';
 import { UserRole } from 'src/modules/user/entities/user.entity';
 
 export interface JwtPayload {
@@ -25,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
+        JwtStrategy.extractTokenFromCookies(),
       ]),
       ignoreExpiration: false,
       secretOrKey: secret,
@@ -40,20 +41,26 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return payload;
   }
 
-  private static extractTokenFromCookies(req: Request): string | null {
-    if (!req || !req.cookies) {
-      return null;
-    }
-
-    const tokenKeys = ['access_token', 'auth_token'];
-
-    for (const key of tokenKeys) {
-      const token = req.cookies[key] as string;
-      if (typeof token === 'string' && token.length > 0) {
-        return token;
+  private static extractTokenFromCookies(): JwtFromRequestFunction {
+    return (req: Request) => {
+      if (!req || !req.cookies) {
+        return null;
       }
-    }
+      console.log(
+        'TCL: JwtStrategy -> exportclassJwtStrategyextendsPassportStrategy -> req',
+        req.cookies,
+      );
 
-    return null;
+      const tokenKeys = ['accessToken', 'authToken', 'refreshToken'];
+
+      for (const key of tokenKeys) {
+        const token = req.cookies[key] as string;
+        if (typeof token === 'string' && token.length > 0) {
+          return token;
+        }
+      }
+
+      return null;
+    };
   }
 }

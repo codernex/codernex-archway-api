@@ -3,15 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './core/interceptor/response.interceptor';
+import cookieParser from 'cookie-parser';
 // import * as cookieParser from 'cookie-parser';
-// import helmet from 'helmet';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Security
-  // app.use(helmet);
-  // app.use(cookieParser);
+  app.use(helmet());
+  app.use(cookieParser());
 
   // CORS
   app.enableCors({

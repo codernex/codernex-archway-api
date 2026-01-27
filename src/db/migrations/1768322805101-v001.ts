@@ -1,9 +1,10 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class V0011767538908389 implements MigrationInterface {
-    name = 'V0011767538908389'
+export class V0011768322805101 implements MigrationInterface {
+    name = 'V0011768322805101'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "api_keys" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "apiKey" character varying NOT NULL, "expiryDate" TIMESTAMP, "origin" character varying NOT NULL, "scope" text, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_5c8a79801b44bd27b79228e1dad" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."projects_status_enum" AS ENUM('draft', 'published')`);
         await queryRunner.query(`CREATE TABLE "projects" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "slug" character varying NOT NULL, "shortDescription" text NOT NULL, "fullDescription" text NOT NULL, "content" jsonb NOT NULL DEFAULT '[]', "thumbnailUrl" character varying NOT NULL, "images" text, "technologies" text NOT NULL, "liveUrl" character varying, "githubUrl" character varying, "featured" boolean NOT NULL DEFAULT false, "order" integer NOT NULL DEFAULT '0', "seoTitle" character varying, "seoDescription" text, "seoKeywords" character varying, "status" "public"."projects_status_enum" NOT NULL DEFAULT 'draft', "publishedAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_96e045ab8b0271e5f5a91eae1ee" UNIQUE ("slug"), CONSTRAINT "PK_6271df0a7aed1d6c0691ce6ac50" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."tags_type_enum" AS ENUM('project', 'blog', 'both')`);
@@ -53,6 +54,7 @@ export class V0011767538908389 implements MigrationInterface {
         await queryRunner.query(`DROP TYPE "public"."tags_type_enum"`);
         await queryRunner.query(`DROP TABLE "projects"`);
         await queryRunner.query(`DROP TYPE "public"."projects_status_enum"`);
+        await queryRunner.query(`DROP TABLE "api_keys"`);
     }
 
 }

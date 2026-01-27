@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { Blog, BlogStatus } from './entities/blog.entity';
 import { PaginationQueryDto } from 'src/core/dto/paginated-query.dto';
+import { blockToHtml } from 'src/utils/blockToHtml';
+import { FindOptionsWhere, Repository } from 'typeorm';
+import { Blog, BlogStatus, ContentBlock } from './entities/blog.entity';
 
 const map = new Map<string, string>();
 
@@ -12,9 +13,11 @@ export class BlogService {
     @InjectRepository(Blog)
     private readonly repository: Repository<Blog>,
   ) {}
-  create(createBlogDto: any) {
-    const blog = this.repository.create(createBlogDto);
-
+  async create(createBlogDto: any) {
+    const blog = new Blog();
+    Object.assign(blog, createBlogDto);
+    const readingTime = this.getReadingTime(blog.content);
+    blog.readingTime = readingTime;
     return this.repository.save(blog);
   }
 
@@ -113,6 +116,23 @@ export class BlogService {
       ],
       relations: ['author', 'tags'],
     });
+  }
+
+  private getReadingTime(content: ContentBlock[]): number {
+    // 1. Convert blocks to plain text (strip HTML tags)
+    const plainText = content
+      .map((block) => blockToHtml({ block }))
+      .join(' ')
+      .replace(/<[^>]*>/g, ''); // Simple regex to remove HTML tags
+
+    // 2. Count the words
+    const words = plainText.trim().split(/\s+/).length;
+
+    // 3. Divide by average reading speed (approx 225 wpm)
+    const wordsPerMinute = 225;
+    const minutes = Math.ceil(words / wordsPerMinute);
+
+    return minutes;
   }
 
   remove(id: string) {
