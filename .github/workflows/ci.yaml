@@ -14,32 +14,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js (CI only)
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 3. Copy project to EC2 (keep .env.production)
-      - name: Copy project to EC2
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build the project
+      - name: Build project
+        run: npm run build
+
+      # 5. Copy production files to EC2
+      - name: Copy production files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "."
+          source: "dist/,package.json,package-lock.json,src/db/"
           target: "/home/${{ secrets.EC2_USER }}/apps/api"
           rm: true
-          exclude: |
-            node_modules
-            .git
-            .github
-            .env
-            .env.production
+          strip_components: 0
 
-      # 4. Build & restart NestJS on EC2
-      - name: Build and restart Backend on EC2
+      # 6. Install deps, run migrations & restart PM2 on EC2
+      - name: Deploy and restart API on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -63,7 +66,7 @@ jobs:
               npm install -g pm2
             fi
 
-            # create product env
+            # Create production .env file
             cat > .env <<EOF
             NODE_ENV=production
             DB_URL=${{ secrets.DB_URL }}
@@ -80,14 +83,14 @@ jobs:
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             EOF
-            # Install deps & build
-            npm install
-            npm run build
 
-            # Prune dev deps
-            npm prune --production
+            # Install production dependencies only
+            npm ci --omit=dev
 
-            # Restart API with existing env file
+            # Run TypeORM migrations
+            npm run migration:run
+
+            # Restart API with PM2
             pm2 delete api || true
             pm2 start dist/main.js \
               --name api \
