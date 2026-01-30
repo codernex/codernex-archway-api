@@ -100,7 +100,8 @@ jobs:
             pnpm install --prod --frozen-lockfile
 
             # Run TypeORM migrations
-            pnpm run migration:run
+            npm run migration:generate ./dist/db/migrations/migration-${{ github.sha }}
+            npm run migration:run
 
             # Restart API with PM2
             pm2 delete api || true
