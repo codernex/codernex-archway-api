@@ -99,9 +99,8 @@ jobs:
             # Install production dependencies only
             pnpm install --prod --frozen-lockfile
 
-            # Run TypeORM migrations
-            npm run migration:generate ./dist/db/migrations/migration-${{ github.sha }}
-            npm run migration:run
+            # Run TypeORM migrations (uses compiled dist/db/config.js)
+            npx typeorm migration:run -d ./dist/db/config.js
 
             # Restart API with PM2
             pm2 delete api || true
