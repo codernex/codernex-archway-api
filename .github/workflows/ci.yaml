@@ -100,7 +100,11 @@ jobs:
             pnpm install --prod --frozen-lockfile
 
             # Run TypeORM migrations (uses compiled dist/db/config.js)
-            npx typeorm migration:run -d ./dist/db/config.js
+            # NOTE: Temporarily disabled - need to sync typeorm_migrations table first
+            # Run this SQL on your DB to mark existing migration as applied:
+            # INSERT INTO typeorm_migrations (timestamp, name) VALUES (1768322805101, 'V0011768322805101');
+            # Then uncomment the line below:
+            # npx typeorm migration:run -d ./dist/db/config.js
 
             # Restart API with PM2
             pm2 delete api || true
